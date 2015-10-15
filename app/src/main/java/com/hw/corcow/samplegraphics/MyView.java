@@ -36,7 +36,6 @@ public class MyView extends View {
         super(context, attrs);
         init();
 
-
         if (attrs != null) {
             TypedArray ta = context.obtainStyledAttributes(attrs, R.styleable.MyView);
             Drawable d = ta.getDrawable(R.styleable.MyView_image);
@@ -47,7 +46,6 @@ public class MyView extends View {
 
             ta.recycle();
         }
-
     }
 
     Paint mPaint;
@@ -116,7 +114,43 @@ public class MyView extends View {
 
     public void setBitmap(Bitmap bitmap) {
         mBitmap = bitmap;
+        requestLayout();
         invalidate();
+    }
+
+    @Override
+    protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {         // 크기
+        int width = mBitmap.getWidth() + getPaddingLeft() + getPaddingRight();
+        int height = mBitmap.getHeight() + getPaddingTop() + getPaddingBottom();
+        /*
+        int mode = MeasureSpec.getMode(widthMeasureSpec);
+        int size = MeasureSpec.getSize(widthMeasureSpec);
+        switch (mode) {
+            case MeasureSpec.AT_MOST :
+                width = (width > size) ? size : width;
+                break;
+            case MeasureSpec.EXACTLY :
+                width = size;
+                break;
+            case MeasureSpec.UNSPECIFIED :
+                break;
+        }
+        */
+        width = resolveSize(width, widthMeasureSpec);           // 위 주석을 담은 함수
+        height = resolveSize(height, heightMeasureSpec);
+
+        setMeasuredDimension(width, height);
+    }
+
+    int mX, mY;
+
+    @Override
+    protected void onLayout(boolean changed, int left, int top, int right, int bottom) {    // 위치
+        super.onLayout(changed, left, top, right, bottom);
+        int width = right - left - getPaddingLeft() - getPaddingRight();
+        mX = getPaddingLeft() + (width - mBitmap.getWidth()) / 2;
+        int height = bottom - top - getPaddingBottom() - getPaddingTop();
+        mY = getPaddingTop() + (height - mBitmap.getHeight()) / 2;
     }
 
     @Override
@@ -126,11 +160,12 @@ public class MyView extends View {
     }
 
     private void drawColorFilter(Canvas canvas) {
+        canvas.drawColor(Color.DKGRAY);
         ColorMatrix cm = new ColorMatrix();
         cm.setSaturation(0);
         ColorFilter filter = new ColorMatrixColorFilter(cm);
         mPaint.setColorFilter(filter);
-        canvas.drawBitmap(mBitmap, 0, 0, mPaint);
+        canvas.drawBitmap(mBitmap, mX, mY, mPaint);
     }
 
     private void drawShader(Canvas canvas) {
